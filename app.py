@@ -4,20 +4,6 @@ from joblib import load
 import numpy as np
 from sklearn.preprocessing import OrdinalEncoder
 
-"""
-ISSUE: Prediction always reutrns 0.0 despite input_data and correct encoding.
-MAYBE: Because of data imbalance.
-Possible fix 1: Make sure all data classes are balanced using:
-    from imblearn.over_sampling import SMOTE
-    # Apply SMOTE
-    smote = SMOTE()
-    X_resampled, y_resampled = smote.fit_resample(X, y)
-
-Re-export and try again
-
-Possible fix 2: Use Random Forest Algorithm
-"""
-
 # create sidebar
 with st.sidebar:
     st.title("Car Evaluation using KNN Model")
@@ -32,11 +18,10 @@ with st.sidebar:
     - [Matplotlib](), [Seaborn](), [numpy](), [pandas]()
                 
     ### How it works:
-    1. Takes a pdf
-    2. Extracts text data and stores it in DocumentStore 
-    3. Initialises BM25Retriever and FARMReader
-    4. Connects reader & retriever with ExtractiveQAPipeline
-    5. Process user query & display answer
+    1. Takes data about your car
+    2. Encodes into processable data
+    3. Use the model to predict evaluation
+    4. Present the result to the user
     ''')
 
     add_vertical_space(3)
@@ -54,7 +39,7 @@ def predict_car(model, encoded_data):
 
 def main():
     # Load the trained model
-    model_path = './Models/knn_car_eval.joblib'
+    model_path = './Models/rf_car_eval.joblib'
     knn_model = load(model_path)
 
     # Define the order of categorical data in ascending order
@@ -75,25 +60,11 @@ def main():
 
     # Create input fields for each feature
     buying = st.selectbox('Buying price', options=categorical_orders['buying'])
-    maintenance = st.selectbox('Maintenance price', options=categorical_orders['maintenance'])
+    maintenance = st.selectbox('Maintenance cost', options=categorical_orders['maintenance'])
     doors = st.selectbox('Number of Doors', options=categorical_orders['doors'])
     persons = st.selectbox('Number of Persons', options=categorical_orders['persons'])
     trunk = st.selectbox('Trunk size', options=categorical_orders['trunk'])
     safety = st.selectbox('Safety level', options=categorical_orders['safety'])
-
-    # DEBUG ==========================================================================================
-    # set input data
-    input_data = np.array([['vhigh', 'vhigh', '2', '2', 'med', 'high']])
-
-    # encode data
-    enc_data = encode_data(input_data, categorical_orders)
-
-    # predict data
-    prediction = predict_car(knn_model, enc_data)
-
-    st.markdown("""---""")
-    st.markdown(f"**Your car's predicted Safety Level**: {classes[int(prediction[0])]}")
-    # DEBUG END ======================================================================================
 
     # Make a prediction
     if st.button('Calculate Prediction'):
